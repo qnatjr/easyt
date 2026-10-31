@@ -70,3 +70,6 @@ desktop.ini
 
 # --- Claude Code (local, per-machine) --------------------------------------
 .claude/settings.local.json
+
+# --- Local docs (specs, plans) ---------------------------------------------
+docs/
