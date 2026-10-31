@@ -1,0 +1,72 @@
+# --- Secrets ---------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- App output (projects, voices, niches, generated media) ----------------
+data/
+*.wav
+*.mp3
+*.mp4
+*.m4a
+*.webm
+*.part
+*.ytdl
+
+# --- Python ----------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+*.egg
+
+# --- Virtual environments --------------------------------------------------
+.venv/
+venv/
+env/
+ENV/
+.python-version
+
+# --- Testing / coverage / type checkers ------------------------------------
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.tox/
+.nox/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.hypothesis/
+
+# --- Logs & temp -----------------------------------------------------------
+*.log
+*.tmp
+*.bak
+*.swp
+*~
+tmp/
+
+# --- Editors / IDEs --------------------------------------------------------
+.idea/
+.vscode/
+*.code-workspace
+*.sublime-*
+
+# --- OS --------------------------------------------------------------------
+.DS_Store
+._*
+Thumbs.db
+desktop.ini
+
+# --- Claude Code (local, per-machine) --------------------------------------
+.claude/settings.local.json

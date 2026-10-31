@@ -1,0 +1,552 @@
+{% extends "base.html" %}
+
+{% block title %}{{ topic }} · Creation Studio{% endblock %}
+{% block heading %}{{ topic }}{% endblock %}
+{% block subheading %}<span class="mono">{{ project_id }}</span> · <span id="docUpdated">loading…</span>{% endblock %}
+{% block content_class %}wide{% endblock %}
+
+{% block content %}
+<div id="app" data-project-id="{{ project_id }}">
+
+  <div class="busy" id="appLoading">
+    <span class="spinner"></span>
+    Loading project…
+  </div>
+
+  <div id="appBody" class="hidden">
+
+    <!-- ================= Stepper ================= -->
+    <div class="stepper" id="stepper">
+      <div class="step" data-step="1" role="button" tabindex="0">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <div class="step-name">Context</div>
+          <div class="step-meta" data-meta="1"></div>
+        </div>
+      </div>
+      <div class="step" data-step="2" role="button" tabindex="0">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          <div class="step-name">Titles</div>
+          <div class="step-meta" data-meta="2"></div>
+        </div>
+      </div>
+      <div class="step" data-step="3" role="button" tabindex="0">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          <div class="step-name">Script</div>
+          <div class="step-meta" data-meta="3"></div>
+        </div>
+      </div>
+      <div class="step" data-step="4" role="button" tabindex="0">
+        <div class="step-num">4</div>
+        <div class="step-text">
+          <div class="step-name">Scenes</div>
+          <div class="step-meta" data-meta="4"></div>
+        </div>
+      </div>
+      <div class="step" data-step="5" role="button" tabindex="0">
+        <div class="step-num">5</div>
+        <div class="step-text">
+          <div class="step-name">Voice-over</div>
+          <div class="step-meta" data-meta="5"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= Step 1 — Context ================= -->
+    <section data-panel="1" class="hidden">
+      <div class="grid cols-2" style="align-items:start">
+
+        <div class="card">
+          <div class="card-head">
+            <div class="grow">
+              <h2>Context</h2>
+              <div class="small muted">Everything the model is told before it writes a word.</div>
+            </div>
+          </div>
+          <div class="card-body stack">
+            <div class="field">
+              <label class="label" for="ctxTopic">Topic</label>
+              <textarea class="textarea" id="ctxTopic" rows="3"
+                        placeholder="What the video is about, in a sentence or two"></textarea>
+            </div>
+
+            <div class="grid cols-2">
+              <div class="field">
+                <label class="label" for="ctxCategory">Category</label>
+                <select class="select" id="ctxCategory" style="text-transform:capitalize">
+                  {% for c in defaults.categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+                </select>
+              </div>
+              <div class="field">
+                <label class="label" for="ctxLanguage">Language</label>
+                <select class="select" id="ctxLanguage">
+                  {% for code, name in defaults.languages.items() %}<option value="{{ code }}">{{ name }}</option>{% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label" for="ctxReference">Reference channel <span class="muted">optional</span></label>
+              <input class="input" id="ctxReference" placeholder="A channel whose tone and pacing to echo">
+              <div class="hint">Used as a tone cue only. Nothing is fetched from it.</div>
+            </div>
+
+            <div class="grid cols-4">
+              <div class="field">
+                <label class="label" for="ctxMinutes">Minutes</label>
+                <input class="input" id="ctxMinutes" type="number" step="0.5"
+                       min="{{ defaults.min_minutes }}" max="{{ defaults.max_minutes }}">
+              </div>
+              <div class="field">
+                <label class="label" for="ctxWpm">Words / minute</label>
+                <input class="input" id="ctxWpm" type="number" step="5" min="80" max="220">
+              </div>
+              <div class="field">
+                <label class="label" for="ctxSceneSeconds">Seconds per image</label>
+                <input class="input" id="ctxSceneSeconds" type="number" step="1"
+                       min="{{ defaults.min_scene_seconds }}" max="{{ defaults.max_scene_seconds }}">
+              </div>
+              <div class="field">
+                <label class="label" for="ctxMaxWords">
+                  Max words
+                  <button class="btn btn-ghost btn-sm" id="ctxMaxReset" type="button"
+                          style="height:20px;padding:0 6px;font-size:11.5px">reset</button>
+                </label>
+                <input class="input" id="ctxMaxWords" type="number" step="10" min="20" max="20000">
+              </div>
+            </div>
+            <div class="hint">
+              Words per minute is the narration pace used to turn minutes into a word target.
+              Seconds per image is how long one still stays on screen, which is what turns that word
+              target into a number of images. Max words is the hard ceiling the script is asked not
+              to cross; reset puts it back to the target plus ten percent.
+            </div>
+          </div>
+          <div class="card-foot">
+            <button class="btn btn-primary" id="ctxSave" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+              </svg>
+              <span data-label>Save changes</span>
+            </button>
+            <button class="btn btn-ghost" id="ctxRevert" type="button">Revert</button>
+            <span class="grow"></span>
+            <span class="small muted" id="ctxDirty"></span>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="card">
+            <div class="card-head">
+              <div class="grow">
+                <h2>What that adds up to</h2>
+                <div class="small muted">Recomputed as you type, saved only when you save.</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="grid cols-2">
+                <div class="stat">
+                  <div class="stat-label">Target words</div>
+                  <div class="stat-value" id="derivedTarget">—</div>
+                  <div class="stat-sub" id="derivedTargetSub"></div>
+                </div>
+                <div class="stat">
+                  <div class="stat-label">Hard maximum</div>
+                  <div class="stat-value" id="derivedMax">—</div>
+                  <div class="stat-sub" id="derivedMaxSub"></div>
+                </div>
+                <div class="stat">
+                  <div class="stat-label">Images to generate</div>
+                  <div class="stat-value" id="derivedImages">—</div>
+                  <div class="stat-sub" id="derivedImagesSub"></div>
+                </div>
+                <div class="stat">
+                  <div class="stat-label">Runtime</div>
+                  <div class="stat-value" id="derivedRuntime">—</div>
+                  <div class="stat-sub">At the pace above</div>
+                </div>
+              </div>
+              <div class="small dim tabnum mt-14" id="derivedLine"></div>
+            </div>
+          </div>
+
+          <div class="callout info">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+            <div>
+              Changing <strong>minutes</strong> or <strong>words per minute</strong> moves the word
+              target. <strong>Seconds per image</strong> decides how far that target is spread: a
+              shorter cadence cuts the script into more beats, so you end up with more images and a
+              bigger generation job for the same runtime. Saving context alone changes nothing you
+              have already generated — but
+              <strong>regenerating the script wipes the scene breakdown and the voice-over state</strong>,
+              because the scenes are cut from the script and cannot survive a rewrite.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================= Step 2 — Titles ================= -->
+    <section data-panel="2" class="hidden">
+      <div class="stack">
+
+        <div class="card hidden" id="selectedTitleCard">
+          <div class="card-body row wrap">
+            <div class="grow">
+              <div class="stat-label">Selected title</div>
+              <div style="font-size:15px;font-weight:600;margin-top:3px" id="selectedTitleText"></div>
+            </div>
+            <button class="btn btn-primary" type="button" data-goto="3">
+              Continue to script
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div class="grow">
+              <h2>Title options</h2>
+              <div class="small muted">The pick drives the script, so choose the promise you can keep.</div>
+            </div>
+            <button class="btn btn-primary" id="titlesGenerate" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+              <span data-label>Generate titles</span>
+            </button>
+          </div>
+          <div class="card-body stack">
+            <div class="callout info hidden" id="titlesDisclaimer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+              <div>
+                The CTR number is the model's judgment of how the line reads. It is not measured
+                click-through data — nobody has clicked anything yet.
+              </div>
+            </div>
+            <div class="stack tight" id="titlesList"></div>
+            <div id="titlesEmpty"></div>
+          </div>
+          <div class="card-foot">
+            <input class="input" id="customTitle" placeholder="Use a custom title instead" style="max-width:520px">
+            <button class="btn" id="customTitleSave" type="button">
+              <span data-label>Use this title</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================= Step 3 — Script ================= -->
+    <section data-panel="3" class="hidden">
+      <div class="stack">
+
+        <div class="card">
+          <div class="card-head">
+            <div class="grow">
+              <h2>Write the script</h2>
+              <div class="small muted" id="scriptForTitle"></div>
+            </div>
+            <button class="btn btn-primary" id="scriptGenerate" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/>
+              </svg>
+              <span data-label>Generate script</span>
+            </button>
+          </div>
+          <div class="card-body stack">
+            <div class="grid cols-3">
+              <div class="field">
+                <label class="label" for="scMinutes">Minutes</label>
+                <input class="input" id="scMinutes" type="number" step="0.5"
+                       min="{{ defaults.min_minutes }}" max="{{ defaults.max_minutes }}">
+              </div>
+              <div class="field">
+                <label class="label" for="scWpm">Words / minute</label>
+                <input class="input" id="scWpm" type="number" step="5" min="80" max="220">
+              </div>
+              <div class="field">
+                <label class="label" for="scMaxWords">Max words</label>
+                <input class="input" id="scMaxWords" type="number" step="10" min="20" max="20000">
+              </div>
+            </div>
+            <div class="field">
+              <label class="label" for="scNotes">Direction <span class="muted">optional</span></label>
+              <textarea class="textarea" id="scNotes" rows="3"
+                        placeholder="Anything the model should do differently: open on a question, keep the tone dry, name the sources out loud…"></textarea>
+            </div>
+            <div class="callout warn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <div id="scriptRegenWarn">
+                Generating replaces the current script and clears the scene breakdown and voice-over
+                state that were derived from it.
+              </div>
+            </div>
+            <div class="busy hidden" id="scriptBusy">
+              <span class="spinner"></span>
+              <div>
+                Writing the script in one pass, then checking it against the word budget.
+                <span class="muted" data-elapsed></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid cols-4 hidden" id="scriptStats">
+          <div class="stat">
+            <div class="stat-label">Word count</div>
+            <div class="stat-value" id="statWords">—</div>
+            <div class="stat-sub" id="statWordsSub"></div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Target</div>
+            <div class="stat-value" id="statTarget">—</div>
+            <div class="stat-sub" id="statTargetSub"></div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Estimated</div>
+            <div class="stat-value" id="statMinutes">—</div>
+            <div class="stat-sub" id="statMinutesSub"></div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Budget</div>
+            <div class="stat-value" id="statBudget">—</div>
+            <div class="stat-sub" id="statBudgetSub"></div>
+          </div>
+        </div>
+
+        <div id="scriptNotices" class="stack tight"></div>
+
+        <div class="card" id="scriptCard">
+          <div class="card-head">
+            <div class="grow">
+              <h2>Script</h2>
+              <div class="small muted" id="scriptLive"></div>
+            </div>
+            <button class="btn btn-sm" id="scriptCopy" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              Copy
+            </button>
+            <a class="btn btn-sm" id="scriptDownload" href="/api/projects/{{ project_id }}/export/script.txt" download>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Download .txt
+            </a>
+          </div>
+          <div class="card-body">
+            <textarea class="textarea script" id="scriptText"
+                      placeholder="The generated script lands here. Edit it freely — the scenes are cut from whatever is saved."></textarea>
+          </div>
+          <div class="card-foot">
+            <button class="btn btn-primary" id="scriptSave" type="button">
+              <span data-label>Save edits</span>
+            </button>
+            <span class="grow"></span>
+            <button class="btn" type="button" data-goto="4">
+              Continue to scenes
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="scriptEmpty"></div>
+
+      </div>
+    </section>
+
+    <!-- ================= Step 4 — Scenes ================= -->
+    <section data-panel="4" class="hidden">
+      <div class="stack">
+
+        <div class="card">
+          <div class="card-head">
+            <div class="grow">
+              <h2>Scene breakdown</h2>
+              <div class="small muted">One scene is one still image.</div>
+            </div>
+            <button class="btn btn-primary" id="scenesGenerate" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+              </svg>
+              <span data-label>Generate scenes</span>
+            </button>
+          </div>
+          <div class="card-body stack">
+            <p class="dim" id="scenesExplainer"></p>
+            <div class="grid cols-3">
+              <div class="stat">
+                <div class="stat-label">Images to generate</div>
+                <div class="stat-value" id="sceneExpected">—</div>
+                <div class="stat-sub" id="sceneExpectedSub">One image prompt each</div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">Seconds per image</div>
+                <div class="stat-value" id="sceneSeconds">—</div>
+                <div class="stat-sub">Set in the context step</div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">Covered runtime</div>
+                <div class="stat-value" id="sceneRuntime">—</div>
+                <div class="stat-sub" id="sceneRuntimeSub"></div>
+              </div>
+            </div>
+            <div class="busy hidden" id="scenesBusy">
+              <span class="spinner"></span>
+              <div>
+                Cutting the script into short beats and writing one image prompt for each.
+                This is several batched model calls inside a single long request, so there is no
+                honest progress to show — only how long it has been running.
+                <span class="muted" data-elapsed></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="scenesFailed"></div>
+
+        <div class="grid cols-2" style="align-items:start">
+          <div class="card hidden" id="thumbCard">
+            <div class="card-head">
+              <div class="grow">
+                <h2>Thumbnail prompt</h2>
+                <div class="small muted">One 16:9 still, separate from the scene images.</div>
+              </div>
+              <button class="btn btn-sm" id="thumbCopy" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                Copy
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="prompt-text" id="thumbText"></div>
+            </div>
+          </div>
+
+          <div class="card hidden" id="negCard">
+            <div class="card-head">
+              <div class="grow">
+                <h2>Negative prompt</h2>
+                <div class="small muted">What to keep out of the frame.</div>
+              </div>
+              <button class="btn btn-sm" id="negCopy" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                Copy
+              </button>
+            </div>
+            <div class="card-body stack tight">
+              <div class="prompt-text" id="negText"></div>
+              <div class="small muted">
+                One negative prompt for the whole video: it applies to every image, and it is
+                already repeated in every row of prompts.csv.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card hidden" id="bibleCard">
+          <div class="card-head">
+            <div class="grow">
+              <h2>Style bible</h2>
+              <div class="small muted">The visual system every image is supposed to share.</div>
+            </div>
+            <button class="btn btn-sm" id="bibleCopy" type="button">Copy</button>
+            <button class="btn btn-sm" id="bibleToggle" type="button">Show</button>
+          </div>
+          <div class="card-body hidden" id="bibleBody">
+            <div class="prompt-text" id="bibleText"></div>
+          </div>
+        </div>
+
+        <div class="row wrap hidden" id="scenesToolbar">
+          <input class="input" id="sceneSearch" placeholder="Filter by narration…" style="max-width:280px">
+          <span class="small muted" id="sceneFilterCount"></span>
+          <span class="grow"></span>
+          <button class="btn btn-sm" id="viewCards" type="button">Cards</button>
+          <button class="btn btn-sm" id="viewTable" type="button">Table</button>
+          <a class="btn btn-sm" href="/api/projects/{{ project_id }}/export/prompts.csv" download>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            prompts.csv
+          </a>
+          <a class="btn btn-sm btn-primary" href="/api/projects/{{ project_id }}/export/bundle.zip" download>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
+            Everything (.zip)
+          </a>
+        </div>
+
+        <div id="scenesList" class="stack tight"></div>
+        <div id="scenesEmpty"></div>
+
+      </div>
+    </section>
+
+    <!-- ================= Step 5 — Voice-over ================= -->
+    <section data-panel="5" class="hidden">
+      <div class="stack">
+
+        <div class="card" id="voiceCard">
+          <div class="card-head">
+            <div class="grow">
+              <h2>Voice-over</h2>
+              <div class="small muted">One track for the whole script, cut on sentences and stitched back together.</div>
+            </div>
+            <button class="btn btn-primary" id="voGenerate" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/>
+              </svg>
+              <span data-label>Generate voice-over</span>
+            </button>
+          </div>
+          <div class="card-body stack" id="voiceControls">
+            <div class="field" style="max-width:420px">
+              <label class="label" for="voiceSelect">Voice</label>
+              <select class="select" id="voiceSelect"></select>
+            </div>
+            <div id="voiceDetail"></div>
+            <div id="voiceWarn"></div>
+          </div>
+          <div id="voiceEmpty"></div>
+        </div>
+
+        <div id="voStatus" class="stack"></div>
+        <div id="voResults" class="stack"></div>
+
+      </div>
+    </section>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}<script src="/static/js/project.js"></script>{% endblock %}

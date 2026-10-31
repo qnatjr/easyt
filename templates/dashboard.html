@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Projects · Creation Studio{% endblock %}
+{% block heading %}Projects{% endblock %}
+{% block subheading %}Topic → titles → script → image prompts → voiceover{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div class="grow">
+    <h1>Your projects</h1>
+    <div class="page-desc">
+      Every project carries one video from a raw topic through titles, a budgeted script,
+      one still-image prompt per scene and a cloned voiceover.
+    </div>
+  </div>
+  <button class="btn btn-primary" type="button" id="newProjectBtn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    New project
+  </button>
+</div>
+
+<div class="grid cols-4 mb-14">
+  <div class="stat">
+    <div class="stat-label">Projects</div>
+    <div class="stat-value tabnum" id="statProjects">—</div>
+    <div class="stat-sub" id="statProjectsSub">Loading…</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">With a script</div>
+    <div class="stat-value tabnum" id="statScripts">—</div>
+    <div class="stat-sub" id="statScriptsSub">Loading…</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">With image prompts</div>
+    <div class="stat-value tabnum" id="statWithScenes">—</div>
+    <div class="stat-sub" id="statWithScenesSub">Loading…</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Images total</div>
+    <div class="stat-value tabnum" id="statScenes">—</div>
+    <div class="stat-sub" id="statScenesSub">Loading…</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <div class="grow">
+      <h2>All projects</h2>
+      <div class="small muted" id="listCount">Loading…</div>
+    </div>
+    <input
+      class="input"
+      type="search"
+      id="searchInput"
+      placeholder="Search topic or title"
+      autocomplete="off"
+      spellcheck="false"
+      style="flex:none;width:260px;max-width:45vw">
+  </div>
+  <div id="projectList">
+    <div class="busy"><span class="spinner"></span> Loading projects…</div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}<script src="/static/js/dashboard.js"></script>{% endblock %}

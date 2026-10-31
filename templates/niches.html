@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}Niche Bank · Creation Studio{% endblock %}
+{% block heading %}Niche Bank{% endblock %}
+{% block subheading %}Reference material in, one reusable profile out{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div class="grow">
+    <h1>Niches</h1>
+    <p class="page-desc">
+      A niche is a reference you want your videos to resemble: a link, its narration, stills from
+      it, or the video itself. Analysing it produces a short profile — tone, pacing, hooks, art
+      direction — and that profile is what gets attached to a project. The transcript stays here
+      and is never sent with it.
+    </p>
+  </div>
+  <button class="btn btn-primary" id="addNiche" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    Add niche
+  </button>
+</div>
+
+<div class="busy" id="nichesLoading">
+  <span class="spinner"></span> Loading niches…
+</div>
+
+<div class="grid cols-3 hidden" id="nicheGrid"></div>
+
+<div class="card hidden" id="nichesEmpty">
+  <div class="empty">
+    <div class="empty-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m10 9 5 3-5 3z"/>
+      </svg>
+    </div>
+    <h3>No niches yet</h3>
+    <p>
+      Start with one reference video you wish your channel sounded like. A link is enough — the
+      rest can be added later.
+    </p>
+    <button class="btn btn-primary" id="emptyAddNiche" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Add your first niche
+    </button>
+  </div>
+</div>
+
+<!-- ── New niche ───────────────────────────────────────────────────────── -->
+<div class="modal-backdrop hidden" id="newModal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-head">
+      <h2 class="grow">Add niche</h2>
+      <button class="btn btn-ghost btn-icon btn-sm" id="newClose" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body stack">
+      <div class="field">
+        <label class="label" for="nName">Name</label>
+        <input class="input" id="nName" type="text" maxlength="200" placeholder="Cold-open history" autocomplete="off">
+        <div class="hint">Something you will recognise in a dropdown six projects from now.</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="newCancel" type="button">Cancel</button>
+      <button class="btn btn-primary" id="newSave" type="button">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Niche detail ────────────────────────────────────────────────────── -->
+<div class="modal-backdrop hidden" id="detailModal">
+  <div class="modal" style="max-width:860px">
+    <div class="modal-head">
+      <h2 class="grow truncate" id="dTitle">Niche</h2>
+      <button class="btn btn-ghost btn-icon btn-sm" id="dClose" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body stack">
+      <div class="field">
+        <label class="label" for="dName">Name</label>
+        <input class="input" id="dName" type="text" maxlength="200" autocomplete="off">
+      </div>
+
+      <div class="field">
+        <label class="label" for="dUrl">Reference YouTube link</label>
+        <input class="input" id="dUrl" type="url" maxlength="2000" placeholder="https://www.youtube.com/watch?v=…" autocomplete="off">
+        <div class="hint" id="dUrlHint">
+          Analysing downloads the video, then samples up to four 45-second clips across it. Longer
+          clips are refused by the model, so the whole video is never sent at once.
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="label">Reference video</div>
+        <div class="dropzone" id="dVideoDrop">
+          <div class="dropzone-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m10 9 5 3-5 3z"/>
+            </svg>
+          </div>
+          <div id="dVideoTitle">Drop an MP4 here, or click to browse</div>
+          <div class="hint">Up to 200 MB. Optional — a link does the same job.</div>
+          <input type="file" id="dVideoFile" accept=".mp4,.mov,video/mp4,video/quicktime">
+        </div>
+        <div class="hidden" id="dVideoHave">
+          <div class="callout info">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <div class="grow" id="dVideoInfo"></div>
+            <button class="btn btn-ghost btn-sm" id="dVideoRemove" type="button">Remove</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="label">
+          Screenshots
+          <span class="muted" id="dShotCount">0</span>
+        </div>
+        <div class="dropzone" id="dShotDrop" tabindex="0">
+          <div class="dropzone-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+          </div>
+          <div>Click here and paste, drop files, or click to browse</div>
+          <div class="hint">PNG, JPEG, WebP, GIF or BMP. Up to 12, 8 MB each.</div>
+          <input type="file" id="dShotFiles" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp" multiple>
+        </div>
+        <div class="shot-strip" id="dShots"></div>
+      </div>
+
+      <div class="field">
+        <label class="label" for="dTranscript">Transcript</label>
+        <textarea class="textarea" id="dTranscript" rows="6" placeholder="Paste the reference narration here, or leave it empty and let the analysis fill it from the video."></textarea>
+        <div class="hint">
+          Stored here and shown for your own reading. It is never sent with a project — only the
+          profile below is.
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label" for="dNotes">Notes</label>
+        <textarea class="textarea" id="dNotes" rows="2" placeholder="Anything you want to remember about this reference."></textarea>
+      </div>
+
+      <hr class="divider">
+
+      <div class="callout" id="dStatus">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+        <div class="grow" id="dStatusText">Not analysed yet.</div>
+      </div>
+
+      <div id="dProfile"></div>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn btn-danger" id="dDelete" type="button">Delete</button>
+      <span class="grow"></span>
+      <button class="btn" id="dSave" type="button">Save</button>
+      <button class="btn btn-primary" id="dAnalyse" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="5 3 19 12 5 21 5 3"/>
+        </svg>
+        Analyse
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}<script src="/static/js/niches.js"></script>{% endblock %}

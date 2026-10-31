@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+openai
+python-multipart
+python-dotenv
+pydantic
+jinja2
+# Niche Bank reference ingestion. Both are optional at runtime: without them the
+# YouTube and video features report 503 and the rest of the bank still works.
+yt-dlp
+imageio-ffmpeg
+pytest
+pytest-asyncio
+httpx

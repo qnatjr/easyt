@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}YouTube Creation{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/app.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <a class="brand" href="/">
+      <span class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="5 3 19 12 5 21 5 3"/>
+        </svg>
+      </span>
+      <span class="brand-text">
+        <span class="brand-name">Creation Studio</span>
+        <span class="brand-sub">Faceless video pipeline</span>
+      </span>
+    </a>
+
+    <nav class="nav">
+      <div class="nav-label">Workspace</div>
+      <a class="nav-item {% if nav == 'dashboard' %}active{% endif %}" href="/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/>
+          <rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/>
+        </svg>
+        Projects
+        <span class="nav-count hidden" id="navProjectCount">0</span>
+      </a>
+      <a class="nav-item {% if nav == 'voices' %}active{% endif %}" href="/voices">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/>
+        </svg>
+        Voice Bank
+        <span class="nav-count hidden" id="navVoiceCount">0</span>
+      </a>
+      <a class="nav-item {% if nav == 'niches' %}active{% endif %}" href="/niches">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="4" width="20" height="16" rx="2"/>
+          <path d="m10 9 5 3-5 3z"/>
+        </svg>
+        Niche Bank
+        <span class="nav-count hidden" id="navNicheCount">0</span>
+      </a>
+
+      <div class="nav-label">Reference</div>
+      <a class="nav-item" href="/docs" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+        API docs
+      </a>
+    </nav>
+
+    <div class="sidebar-foot">
+      <button class="btn btn-ghost btn-block btn-sm" id="themeToggle" type="button">
+        <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        <span id="themeLabel">Dark</span>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      {% block topbar %}
+      <div>
+        <div class="topbar-title">{% block heading %}{% endblock %}</div>
+        <div class="topbar-sub">{% block subheading %}{% endblock %}</div>
+      </div>
+      {% endblock %}
+    </header>
+    <div class="content {% block content_class %}{% endblock %}">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script>
+  window.APP_DEFAULTS = {{ defaults | tojson }};
+</script>
+<script src="/static/js/api.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>
